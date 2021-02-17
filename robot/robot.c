@@ -12,22 +12,29 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+int s1, s2;
 
-
+void PAction() {
+	upd();
+	log();
+	int u = -0.3 *(analogRead(A0) - analogRead(A1));
+	motorB(150 + u);
+	motorC(150 - u);
+	delay(10);
+}
 void line() {
-	while(true) 
-	{
-		int u = -0.3 *(analogRead(A0) - analogRead(A1));
-		motorB(150 + u);
-		motorC(150 - u);
-		delay(10);
-	}
+	while(true) PAction();
+}
+void lineForCross() {
+	upd();
+	while(!(s1 < 30 && s2 < 30)) PAction();
 }
 void upd() {
-	s1 = map(analogRead(A0), maxS1, minS1, 0, 100);
-	s2 = map(analogRead(A1), maxS2, minS2, 0, 100);
+	s1 = map(analogRead(A0), 1000, 30, 0, 100);
+	s2 = map(analogRead(A1), 1000, 30, 0, 100);
 }
 void log() {
+	display.clearDisplay();
 	display.setCursor(10, 10);
 	display.print(analogRead(A0));
 	display.setCursor(50, 10);
@@ -38,6 +45,7 @@ void log() {
 	int fill2 = map(analogRead(A1), 31, 1000, 0, 30);
 	display.fillRect(10, 25, 20, fill1, SSD1306_BLACK);	
 	display.fillRect(60, 25, 20, fill2, SSD1306_BLACK);
+	display.display();
 }
 void setup()
 {
